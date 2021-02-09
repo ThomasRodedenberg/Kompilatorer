@@ -1,0 +1,5 @@
+if ok then
+  for i = not 0.0 until 5.0 do
+    ok = 2
+  od
+fi
