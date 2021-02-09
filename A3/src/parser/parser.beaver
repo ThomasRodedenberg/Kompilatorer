@@ -1,0 +1,157 @@
+%class "LangParser";
+%package "lang.ast";
+
+%embed {:
+	static public class SyntaxError extends RuntimeException { public SyntaxError(String msg) {super(msg);}}
+	// Disable syntax error recovery
+	protected void recoverFromError(Symbol token, TokenStream in) {
+		throw new SyntaxError("Cannot recover from the syntax error");
+	}
+:};
+
+
+%terminals LBRACKET, RBRACKET, LPAR, RPAR, SEMICOLON, COMMA;
+
+%terminals LESSER, GREATER, LESSEREQUAL, GREATEREQUAL, NOTEQUAL, EQUAL, ASSIGN, MUL, DIV, MOD, ADD, SUB;
+
+%terminals WHILE, INT, IF, ELSE, RETURN, INTEGER, ID;
+
+%typeof program = "Program";
+%typeof function = "Function";
+%typeof block = "Block";
+%typeof functionList = "List";
+%typeof parameterList = "List";
+%typeof functionCall = "FunctionCall";
+%typeof functionCallStmt = "FunctionCallStmt";
+
+%typeof stmt = "Stmt";
+%typeof stmtList = "List";
+%typeof declaration = "Declaration";
+%typeof assign = "Assign";
+%typeof while = "While";
+%typeof if = "If";
+
+
+%typeof prod = "Expr";
+%typeof sum = "Expr";
+%typeof term = "Expr";
+%typeof factor = "Expr";
+%typeof compare = "Expr";
+
+%typeof expr = "Expr";
+%typeof exprList = "List";
+%typeof id_use = "IdUse";
+%typeof id_decl = "IdDecl";
+%typeof integer = "IntegerValue";
+
+
+%goal program;
+
+program = functionList.id {: return new Program(id); :};
+
+functionList =
+	/* eps */ {: return new List(); :}
+	| functionList.list function.b {: return list.add(b); :}
+	;
+
+function =
+	INT id_decl.id LPAR parameterList.b RPAR block.block {: return new Function(id,b, block); :}
+	| INT id_decl.id LPAR RPAR block.block {: return new Function(id,new List(), block); :}
+	;
+
+block =
+	LBRACKET RBRACKET {: return new Block(new List()); :}
+	| LBRACKET stmtList.stmt RBRACKET {: return new Block(stmt); :}
+	;
+
+parameterList =
+	INT id_decl.id {: return new List().add(id); :}
+	| parameterList.list COMMA INT id_decl.id {: return list.add(id); :}
+	;
+
+stmt =
+	declaration
+	| assign
+	| while
+	| if
+	| returnStmt
+	| functionCallStmt
+	;
+
+stmtList =
+	stmt.s {: return new List().add(s); :}
+	| stmtList.a stmt.s {: return a.add(s); :}
+	;
+
+declaration =
+	INT id_decl.id SEMICOLON {: return new Declaration(id, new Opt()); :}
+	| INT id_decl.id ASSIGN expr.e SEMICOLON {: return new Declaration(id, new Opt(e)); :}
+	;
+
+assign =
+	id_use.id ASSIGN expr.v SEMICOLON {: return new Assign(id,v); :};
+
+while =
+	WHILE LPAR expr.e RPAR block.b {: return new While(e,b); :};
+
+if =
+	IF LPAR expr.e RPAR block.b {: return new If(e,b, new Opt()); :}
+	| IF LPAR expr.e RPAR block.b ELSE block.c {: return new If(e,b, new Opt(c)); :}
+	;
+
+returnStmt =
+	RETURN expr.e SEMICOLON {: return new ReturnStmt(e); :};
+
+functionCallStmt = functionCall.f SEMICOLON {: return new FunctionCallStmt(f); :};
+
+
+exprList =
+	expr.e {: return new List().add(e); :}
+	| exprList.a COMMA expr.e {: return a.add(e); :}
+	;
+
+	expr =
+		compare
+		| sum
+		;
+
+prod =
+	prod.a MUL term.b {:return new Mul(a,b); :}
+	| prod.a DIV term.b {:return new Div(a,b); :}
+	| prod.a MOD term.b {: return new Mod(a,b); :}
+	| term
+	;
+
+	sum =
+		sum.a ADD prod.b {: return new Add(a,b); :}
+		| sum.a SUB prod.b {: return new Sub(a,b); :}
+		| prod
+		;
+
+	compare =
+		sum.a EQUAL sum.b {: return new Equal(a,b); :}
+		| sum.a NOTEQUAL sum.b {: return new NotEqual(a,b); :}
+		| sum.a LESSER sum.b {: return new Lesser(a,b); :}
+		| sum.a GREATER sum.b {: return new Greater(a,b); :}
+		| sum.a LESSEREQUAL sum.b {: return new LesserEqual(a,b); :}
+		| sum.a GREATEREQUAL sum.b {: return new GreaterEqual(a,b); :}
+		;
+
+term =
+	integer
+	| id_use
+	| functionCall
+	| LPAR expr.e RPAR {: return e; :}
+	| SUB term.b {: return new Sub(new IntegerValue("0"),b); :}
+	;
+
+functionCall =
+	id_use.id LPAR RPAR {: return new FunctionCall(id, new List()); :}
+	| id_use.id LPAR exprList.e RPAR {: return new FunctionCall(id,e); :}
+	;
+
+integer = INTEGER.value {: return new IntegerValue(value); :} ;
+
+id_use = ID.id {: return new IdUse(id); :} ;
+
+id_decl = ID.id {: return new IdDecl(id); :} ;
