@@ -1,0 +1,29 @@
+aspect UnknownType {
+	syn nta UnknownType Program.unknownType() = new UnknownType();
+
+	inh UnknownType ASTNode.unknownType();
+	eq Program.getChild().unknownType() = unknownType();
+
+	syn boolean Type.isUnknownType() = false;
+	eq UnknownType.isUnknownType() = true;
+}
+
+aspect IntType {
+	syn nta IntType Program.intType() = new IntType();
+
+	inh IntType ASTNode.intType();
+	eq Program.getChild().intType() = intType();
+
+	syn boolean Type.isIntType() = false;
+	eq IntType.isIntType() = true;
+}
+
+aspect BoolType {
+	syn nta BoolType Program.boolType() = new BoolType();
+
+	inh BoolType ASTNode.boolType();
+	eq Program.getChild().boolType() = boolType();
+
+	syn boolean Type.isBoolType() = false;
+	eq BoolType.isBoolType() = true;
+}
