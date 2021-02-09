@@ -1,0 +1,60 @@
+Program
+  List
+    Function
+      IdDecl ID="gcd1"
+      List
+        IdDecl ID="a"
+        IdDecl ID="b"
+      Block
+        List
+          While
+            NotEqual
+              IdUse ID="a"
+              IdUse ID="b"
+            Block
+              List
+                If
+                  Greater
+                    IdUse ID="a"
+                    IdUse ID="b"
+                  Block
+                    List
+                      Assign
+                        IdUse ID="a"
+                        Sub
+                          IdUse ID="a"
+                          IdUse ID="b"
+                  Opt
+                    Block
+                      List
+                        Assign
+                          IdUse ID="b"
+                          Sub
+                            IdUse ID="b"
+                            IdUse ID="a"
+          ReturnStmt
+            IdUse ID="a"
+    Function
+      IdDecl ID="gcd2"
+      List
+        IdDecl ID="a"
+        IdDecl ID="b"
+      Block
+        List
+          If
+            Equal
+              IdUse ID="b"
+              IntegerValue INTEGER="0"
+            Block
+              List
+                ReturnStmt
+                  IdUse ID="a"
+            Opt
+          ReturnStmt
+            FunctionCall
+              IdUse ID="gcd2"
+              List
+                IdUse ID="b"
+                Mod
+                  IdUse ID="a"
+                  IdUse ID="b"

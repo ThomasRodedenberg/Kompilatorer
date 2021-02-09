@@ -1,0 +1,29 @@
+Program
+  List
+    Function
+      IdDecl ID="a"
+      List
+      Block
+        List
+          Declaration
+            IdDecl ID="x"
+            Opt
+              Add
+                IdUse ID="x"
+                IntegerValue INTEGER="15"
+          Declaration
+            IdDecl ID="b"
+            Opt
+              Sub
+                IdUse ID="x"
+                IntegerValue INTEGER="55"
+          Assign
+            IdUse ID="x"
+            Div
+              IntegerValue INTEGER="4"
+              IntegerValue INTEGER="10"
+          Assign
+            IdUse ID="b"
+            Mul
+              IdUse ID="x"
+              IntegerValue INTEGER="15"
