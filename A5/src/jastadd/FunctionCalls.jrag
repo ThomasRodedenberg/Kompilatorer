@@ -1,0 +1,40 @@
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.Comparator;
+
+aspect FunctionCalls{
+
+  coll Set<Function> Function.functionCalls() [new TreeSet<Function>(new Comp())] with add root Function;
+
+  FunctionCall contributes getName().decl().function()
+  to Function.functionCalls() for enclosingFunction();
+
+  inh Function Stmt.enclosingFunction();
+  inh Function FunctionCall.enclosingFunction();
+//  inh Function Block.enclosingFunction();
+
+  eq Function.getContent().enclosingFunction() {
+    return this;
+  }
+
+  public class Comp implements Comparator<Function>{
+
+    public int compare(Function f1, Function f2){
+      return f1.getName().getID().compareTo(f2.getName().getID());
+    }
+
+  }
+
+}
+
+aspect Reachability{
+	syn TreeSet<Function> Function.reachable() circular [new TreeSet<Function>(new Comp())];
+	eq Function.reachable() {
+		TreeSet<Function> r = new TreeSet<Function>(new Comp());
+  		for (Function f : functionCalls()) {
+    			r.add(f);
+    			r.addAll(f.reachable());
+  		}
+  		return r;
+ 	}
+}

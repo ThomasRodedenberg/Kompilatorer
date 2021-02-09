@@ -1,0 +1,259 @@
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Scanner;
+
+aspect Interpreter{
+
+  public void Program.eval() {
+    for (int i = 0; i < getNumFunction(); i++) {
+      if(getFunction(i).getName().getID().equals("main")){
+        getFunction(i).eval(new ActivationRecord());
+      }
+    }
+    //throw new RuntimeException("Error: no main");
+  }
+
+  public int Function.eval(ActivationRecord actrec){
+    //parameters?
+    try{
+      getContent().eval(actrec);
+    } catch (ReturnException e){
+     return e.getReturnValue();
+    }
+    return 0;
+  }
+
+  public void Block.eval(ActivationRecord actrec){
+    for(int i = 0; i < getNumStmt(); i++){
+      getStmt(i).eval(actrec);
+    }
+  }
+//Stmt
+  public void Stmt.eval(ActivationRecord rec) { }
+
+  @Override
+  public void Declaration.eval(ActivationRecord actrec){
+    if(hasExpr()){
+      int value = getExpr().eval(actrec);
+      actrec.put(getName().uniqueName(), value);
+    }
+  }
+
+  @Override
+  public void Assign.eval(ActivationRecord actrec){
+    int value = getValue().eval(actrec);
+    //actrec.remove(getName().decl().uniqueName());
+    actrec.put(getName().decl().uniqueName(), value);
+  }
+
+  @Override
+  public void While.eval(ActivationRecord actrec){
+    while(getCond().eval(actrec) == 1){
+      getThen().eval(actrec);
+    }
+  }
+
+  @Override
+  public void If.eval(ActivationRecord actrec){
+    if(getCond().eval(actrec) == 1){
+      getThen().eval(actrec);
+    }else if(hasElse()){
+        getElse().eval(actrec);
+
+    }
+  }
+
+  @Override
+  public void FunctionCallStmt.eval(ActivationRecord actrec){
+    FunctionCall fc = getFc();
+    if (fc.getName().decl().getID().equals("print")) {
+      System.out.println(fc.getExpr(0).eval(actrec));
+    }else{
+      fc.eval(actrec);
+    }
+  }
+
+  @Override
+  public void ReturnStmt.eval(ActivationRecord actrec){
+    throw new ReturnException(getReturn().eval(actrec));
+    //System.out.println(getReturn().eval(actrec));
+
+  }
+
+//Int Expr
+  public int Expr.eval(ActivationRecord rec) {
+      return 0;
+  }
+
+  @Override
+  public int FunctionCall.eval(ActivationRecord actrec){
+    if(getName().decl().getID().equals("read")){
+      int input = scan.nextInt();
+      return input;
+    }
+    ActivationRecord newActrec = new ActivationRecord();
+    Function f = getName().decl().function();
+    for(int i=0;i<getNumExpr(); i++){
+      newActrec.put(f.getParameter(i).getID(),getExpr(i).eval(actrec));
+    }
+    return f.eval(newActrec);
+
+  }
+
+  @Override
+  public int IntegerValue.eval(ActivationRecord actrec) {
+    return Integer.parseInt(getINTEGER());
+  }
+  @Override
+  public int Add.eval(ActivationRecord actrec){
+    int value = getLeft().eval(actrec) + getRight().eval(actrec);
+    return value;
+  }
+  @Override
+  public int Mul.eval(ActivationRecord actrec){
+    int value = getLeft().eval(actrec) * getRight().eval(actrec);
+    return value;
+  }
+  @Override
+  public int Sub.eval(ActivationRecord actrec){
+    int value = getLeft().eval(actrec) - getRight().eval(actrec);
+    return value;
+  }
+  @Override
+  public int Div.eval(ActivationRecord actrec){
+    int value = getLeft().eval(actrec) / getRight().eval(actrec);
+    return value;
+  }
+  @Override
+  public int Mod.eval(ActivationRecord actrec){
+    int value = getLeft().eval(actrec) % getRight().eval(actrec);
+    return value;
+  }
+  @Override
+  public int IdUse.eval(ActivationRecord actrec){
+    int value = actrec.get(decl().uniqueName());
+    return value;
+  }
+//Bool Expr
+  @Override
+  public int NotEqual.eval(ActivationRecord actrec){
+    if(getLeft().eval(actrec) != getRight().eval(actrec)){
+      return 1;
+    }else{
+      return 0;
+    }
+  }
+  @Override
+  public int Lesser.eval(ActivationRecord actrec){
+    if(getLeft().eval(actrec) < getRight().eval(actrec)){
+      return 1;
+    }else{
+      return 0;
+    }
+  }
+  @Override
+  public int Greater.eval(ActivationRecord actrec){
+
+
+    if(getLeft().eval(actrec) > getRight().eval(actrec)){
+    
+      return 1;
+    }else{
+      return 0;
+    }
+  }
+  @Override
+  public int LesserEqual.eval(ActivationRecord actrec){
+    if(getLeft().eval(actrec) <= getRight().eval(actrec)){
+      return 1;
+    }else{
+      return 0;
+    }
+  }
+  @Override
+  public int GreaterEqual.eval(ActivationRecord actrec){
+    if(getLeft().eval(actrec) >= getRight().eval(actrec)){
+      return 1;
+    }else{
+      return 0;
+    }
+  }
+  @Override
+  public int Equal.eval(ActivationRecord actrec){
+    if(getLeft().eval(actrec) == getRight().eval(actrec)){
+      return 1;
+    }else{
+      return 0;
+    }
+  }
+
+  /*public String idDecl.uniqueName(actrec){
+    int i =0;
+    while(actrec.contains(getID()){
+      String s = i + "_" + getID();
+      i++;
+    }
+    return s;
+  }*/
+
+  private static final Scanner FunctionCall.scan = new Scanner(System.in);
+
+  public class ReturnException extends RuntimeException{
+    private int returnVal;
+
+    public ReturnException(int v){
+      returnVal = v;
+    }
+    public int getReturnValue(){
+      return returnVal;
+    }
+  }
+
+  public class ActivationRecord {
+
+		private final HashMap<String, Integer> hmap;
+
+		public ActivationRecord() {
+			hmap = new HashMap<String, Integer>();
+		}
+
+    public void put(String s, int val){
+//      if(hmap.containsKey(s)){
+//       hmap.remove(s);
+//      }
+      hmap.put(s,val);
+    }
+
+    public int get(String s){
+      return hmap.get(s);
+    }
+
+    public void remove(String s){
+      hmap.remove(s);
+    }
+
+	}
+}
+aspect uniqueName{
+
+  syn String IdDecl.uniqueName(){
+    return uniquePrefix() + getID();
+  }
+
+  inh String IdDecl.uniquePrefix();
+
+  eq Block.getStmt(int i).uniquePrefix(){
+    return uniquePrefix() + i + "_";
+  }
+
+  inh String Block.uniquePrefix();
+
+	eq Function.getChild().uniquePrefix() {
+		return "";
+	}
+
+	eq Program.getChild().uniquePrefix() {
+		return "<Unknown>";
+	}
+
+}
