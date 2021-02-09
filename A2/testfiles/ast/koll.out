@@ -1,0 +1,13 @@
+Program
+  List
+    Function
+      IdDecl ID="f"
+      List
+        IdDecl ID="x"
+      Block
+        Opt
+          List
+            ReturnStmt
+              Sub
+                IntegerValue INTEGER="0"
+                IdUse ID="x"

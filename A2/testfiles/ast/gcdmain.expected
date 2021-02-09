@@ -1,0 +1,56 @@
+Program
+  List
+    Function
+      IdDecl ID="main"
+      null
+      Block
+        Opt
+          List
+            Declaration
+              IdDecl ID="a"
+              Opt
+            Declaration
+              IdDecl ID="b"
+              Opt
+            Assign
+              IdUse ID="a"
+              Read
+                Opt
+            Assign
+              IdUse ID="b"
+              Read
+                Opt
+            PrintStmt
+              FunctionCall
+                IdUse ID="gcd1"
+                Opt
+                  List
+                    IdUse ID="a"
+                    IdUse ID="b"
+            PrintStmt
+              FunctionCall
+                IdUse ID="gcd2"
+                Opt
+                  List
+                    IdUse ID="a"
+                    IdUse ID="b"
+            Declaration
+              IdDecl ID="diff"
+              Opt
+                Sub
+                  FunctionCall
+                    IdUse ID="gcd1"
+                    Opt
+                      List
+                        IdUse ID="a"
+                        IdUse ID="b"
+                  FunctionCall
+                    IdUse ID="gcd2"
+                    Opt
+                      List
+                        IdUse ID="a"
+                        IdUse ID="b"
+            PrintStmt
+              IdUse ID="diff"
+            ReturnStmt
+              IntegerValue INTEGER="0"
